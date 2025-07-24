@@ -10,24 +10,24 @@ import (
 )
 
 type TcpServer struct {
-	Port   int
-	Parser *parser.TcpParser
+	port   int
+	parser *parser.TcpParser
 }
 
-func NewTcpServer(port int, p *parser.TcpParser) *TcpServer {
+func NewTcpServer(port int, parser *parser.TcpParser) *TcpServer {
 	return &TcpServer{
-		Port:   port,
-		Parser: p,
+		port:   port,
+		parser: parser,
 	}
 }
 
 func (s *TcpServer) Start() error {
-	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", s.Port))
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", s.port))
 	if err != nil {
 		return err
 	}
 	defer listener.Close()
-	fmt.Println("🌐 TCP server running on :", s.Port)
+	fmt.Println("🌐 TCP server running on :", s.port)
 
 	for {
 		conn, err := listener.Accept()
@@ -41,21 +41,24 @@ func (s *TcpServer) Start() error {
 
 func (s *TcpServer) handle(conn net.Conn) {
 	defer conn.Close()
-
 	reader := bufio.NewReader(conn)
-
+	write := func(msg string) { conn.Write([]byte(msg)) }
+	write("[+] Successfully Connected to Keyra\r\n")
 	for {
-		conn.Write([]byte("$ "))
-		rawReq, err := reader.ReadString('\n')
+		req, err := reader.ReadString('\n')
 		if err != nil {
 			return
 		}
-
-		resp, err := s.Parser.Parse(rawReq)
+		exec, err := s.parser.Parse(req)
 		if err != nil {
-			conn.Write([]byte("Error: " + err.Error() + "\n"))
-		} else {
-			conn.Write([]byte(resp))
+			write("Bad Request Error: " + err.Error() + "\r\n")
+			continue
 		}
+		resp, err := exec.Execute()
+		if err != nil {
+			write("Unexpected Error: " + err.Error() + "\r\n")
+			continue
+		}
+		write(*resp + "\r\n")
 	}
 }

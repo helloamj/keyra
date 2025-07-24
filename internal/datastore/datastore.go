@@ -8,10 +8,6 @@ type DataStore struct {
 	data sync.Map
 }
 
-func newDataStore() *DataStore {
-	return &DataStore{}
-}
-
 func (s *DataStore) Set(key string, value []byte) {
 	s.data.Store(key, value)
 }
