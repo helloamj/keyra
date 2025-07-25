@@ -7,18 +7,18 @@ import (
 )
 
 type Engine struct {
-	shards     	[]*dataStore.DataStore
-	numShards  	uint32
+	shards    []*dataStore.DataStore
+	numShards uint
 }
 
-func New(numShards uint32) *Engine {
+func New(numShards uint) *Engine {
 	shards := make([]*dataStore.DataStore, numShards)
-	for i := uint32(0); i < numShards; i++ {
+	for i := uint(0); i < numShards; i++ {
 		shards[i] = &dataStore.DataStore{}
 	}
 	return &Engine{
-		shards:    	shards,
-		numShards: 	numShards,
+		shards:    shards,
+		numShards: numShards,
 	}
 }
 
@@ -41,5 +41,5 @@ func (e *Engine) Delete(key string) {
 
 func (e *Engine) getShard(key string) *dataStore.DataStore {
 	hash := crc32.ChecksumIEEE([]byte(key))
-	return e.shards[hash%uint32(e.numShards)]
+	return e.shards[uint(hash)%e.numShards]
 }
