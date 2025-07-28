@@ -7,39 +7,39 @@ import (
 )
 
 type Engine struct {
-	shards    []*dataStore.DataStore
-	numShards uint
+	partition    []*dataStore.DataStore
+	numPartition uint
 }
 
-func New(numShards uint) *Engine {
-	shards := make([]*dataStore.DataStore, numShards)
-	for i := uint(0); i < numShards; i++ {
-		shards[i] = &dataStore.DataStore{}
+func New(numPartition uint) *Engine {
+	partition := make([]*dataStore.DataStore, numPartition)
+	for i := uint(0); i < numPartition; i++ {
+		partition[i] = &dataStore.DataStore{}
 	}
 	return &Engine{
-		shards:    shards,
-		numShards: numShards,
+		partition:    partition,
+		numPartition: numPartition,
 	}
 }
 
 func (e *Engine) Set(key string, value []byte) {
-	shard := e.getShard(key)
-	shard.Set(key, value)
+	partition := e.getPartition(key)
+	partition.Set(key, value)
 }
 
 func (e *Engine) Get(key string) ([]byte, bool) {
-	shard := e.getShard(key)
-	val, ok := shard.Get(key)
+	partition := e.getPartition(key)
+	val, ok := partition.Get(key)
 	return val, ok
 }
 
 func (e *Engine) Delete(key string) {
-	shard := e.getShard(key)
-	shard.Delete(key)
+	partition := e.getPartition(key)
+	partition.Delete(key)
 
 }
 
-func (e *Engine) getShard(key string) *dataStore.DataStore {
+func (e *Engine) getPartition(key string) *dataStore.DataStore {
 	hash := crc32.ChecksumIEEE([]byte(key))
-	return e.shards[uint(hash)%e.numShards]
+	return e.partition[uint(hash)%e.numPartition]
 }

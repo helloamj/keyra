@@ -7,11 +7,11 @@ import (
 	"go.uber.org/fx"
 )
 
-func Module(port int, numShards uint) fx.Option {
+func Module(port int, numPartitions uint) fx.Option {
 	return fx.Options(
 		fx.Provide(
 			func() int { return port },
-			func() uint { return numShards },
+			func() uint { return numPartitions },
 			engine.New,
 			parser.NewTcpParser,
 			server.NewTcpServer,

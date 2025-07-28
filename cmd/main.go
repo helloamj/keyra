@@ -11,7 +11,7 @@ import (
 
 func main() {
 	port := flag.Int("port", 8080, "Port to run TCP server on")
-	numShards := flag.Uint("numShards", 5, "Port to run TCP server on")
+	numPartitions := flag.Uint("numPartitions", 5, "Port to run TCP server on")
 	flag.Parse()
 
 	if *port < 1024 || *port > 65535 {
@@ -19,7 +19,7 @@ func main() {
 		os.Exit(1)
 	}
 	app := fx.New(
-		keyra.Module(*port, *numShards),
+		keyra.Module(*port, *numPartitions),
 	)
 	app.Run()
 }
